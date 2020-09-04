@@ -1,6 +1,6 @@
 [package]
 name = "beep"
-version = "0.1.0"
+version = "0.1.1-alpha.0"
 authors = ["Altagos <altagos@posteo.de>"]
 edition = "2018"
 description = "A Discord Bot"
