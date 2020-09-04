@@ -4,6 +4,7 @@ use serenity::{
     model::id::{ChannelId, UserId},
 };
 
+pub mod config;
 pub mod db;
 pub mod groups;
 pub mod handler;

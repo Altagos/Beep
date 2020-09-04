@@ -7,7 +7,7 @@ use crate::commands::{config::general::*, dnd::dice::*, moderation::*};
 pub struct Moderation;
 
 #[group]
-#[commands(setup, default_role)]
+#[commands(setup, default_role, prefix)]
 #[prefixes("c", "config")]
 #[description = "
 You can use these command to configure various things fot this command, like the moderation roles.

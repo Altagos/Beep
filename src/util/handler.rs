@@ -1,15 +1,16 @@
+use mongodb::bson::doc;
 use serenity::{
     async_trait,
     client::{Context, EventHandler},
-    http::CacheHttp,
     model::{
         event::ResumedEvent,
         gateway::Ready,
         prelude::{GuildId, Member},
+        user::User,
     },
 };
 
-use crate::util::{db::get_default_role, get_bot_id};
+use crate::util::{db::get_default_role, get_bot_id, managers::Database};
 
 pub struct Handler;
 
@@ -31,7 +32,7 @@ impl EventHandler for Handler {
     }
 
     async fn guild_member_addition(&self, ctx: Context, guild_id: GuildId, mut new_member: Member) {
-        if new_member.user.id == get_bot_id(ctx.http()).await {
+        if new_member.user.bot {
             return;
         }
         let default_role = get_default_role(&ctx, &guild_id).await;
@@ -42,6 +43,28 @@ impl EventHandler for Handler {
                 }
             }
             _ => {}
+        }
+    }
+
+    async fn guild_member_removal(
+        &self,
+        ctx: Context,
+        guild_id: GuildId,
+        user: User,
+        _member_data_if_available: Option<Member>,
+    ) {
+        let data = ctx.data.write().await;
+        let db = data
+            .get::<Database>()
+            .expect("I expected a database client but got none :(");
+        if user.id == get_bot_id(&ctx.http).await {
+            let collection = db.collection("guild_config");
+            let filter = doc! {"_id": guild_id.0};
+            if let Err(why) = collection.find_one_and_delete(filter, None).await {
+                error!("Could not delete guild from db: {}", why);
+            } else {
+                info!("Delete guild from db");
+            }
         }
     }
 

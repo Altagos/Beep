@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Altagos <altagos@posteo.de>"]
 edition = "2018"
 description = "A Discord Bot"
+publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -15,6 +16,9 @@ kankyo = "0.2"
 toml = "0.5"
 mongodb = "1.1.1"
 rand = "0.7"
+dashmap = "4.0.0-rc6"
+serde = { version = "1.0", features = ["derive"] }
+futures = "0.3"
 
 [dependencies.lavalink-rs]
 git = "https://gitlab.com/nitsuga5124/lavalink-rs/"

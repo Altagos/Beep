@@ -5,7 +5,10 @@ use serenity::{
     prelude::{Context, Mentionable},
 };
 
-use crate::util::{managers::Database, send};
+use crate::util::{
+    managers::{BotConfig, Database, Prefixes},
+    send,
+};
 
 ///Use this command to setup the bot for this guild
 #[command]
@@ -41,7 +44,7 @@ async fn default_role(ctx: &Context, msg: &Message, args: Args) -> CommandResult
     let collection = db.collection("guild_config");
 
     let filter = doc! {"_id": guild_id.id.0};
-    let doc = doc! {"default_role": default_role.0};
+    let doc = doc! {"$set": {"default_role": default_role.0}};
     let mut options = UpdateOptions::default();
     options.upsert = Some(true);
 
@@ -68,5 +71,81 @@ async fn default_role(ctx: &Context, msg: &Message, args: Args) -> CommandResult
         ),
     )
     .await;
+    Ok(())
+}
+
+/// Set a custom prefix for your server.
+/// You can also reset the prefix for this bot by using `reset` instead of a custom prefix
+///
+/// Usage:
+/// ```discord
+/// !config prefix <custom_prefix>
+/// !config prefix `reset`
+/// ```
+#[command]
+#[only_in(guild)]
+#[required_permissions(MANAGE_GUILD)]
+#[owner_privilege(true)]
+#[num_args(1)]
+#[aliases("p")]
+async fn prefix(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+    let prefix = args.single::<String>()?;
+    let guild_id = msg.guild_id.unwrap();
+
+    let data = ctx.data.read().await;
+    let prefixes = data.get::<Prefixes>().unwrap();
+    let bot_config = data.get::<BotConfig>().unwrap();
+    let db = data
+        .get::<Database>()
+        .expect("I expected a database client but got none :(");
+    let collection = db.collection("guild_config");
+
+    if prefix != "`reset`" && prefix != bot_config.bot.default_prefix {
+        let filter = doc! {"_id": guild_id.0};
+        let doc = doc! {"$set": {"prefix": &prefix}};
+        let mut options = UpdateOptions::default();
+        options.upsert = Some(true);
+
+        if let Err(why) = collection.update_one(filter, doc, options).await {
+            send(
+                ctx,
+                &msg.channel_id,
+                "Could not update the prefix for this server",
+            )
+            .await;
+            error!("Unable to update prefix for {}: {}", guild_id, why);
+            return Ok(());
+        }
+
+        prefixes.insert(guild_id, String::from(&prefix));
+        send(
+            ctx,
+            &msg.channel_id,
+            &*format!("My prefix for this server is now: {}", prefix),
+        )
+        .await;
+    } else {
+        let filter = doc! {"_id": guild_id.0};
+        let doc = doc! {"$unset": {"prefix": ""}};
+
+        if let Err(why) = collection.update_one(filter, doc, None).await {
+            send(
+                ctx,
+                &msg.channel_id,
+                "Could not reset the prefix for this server",
+            )
+            .await;
+            error!("Unable to reset prefix for {}: {}", guild_id, why);
+            return Ok(());
+        }
+
+        prefixes.remove(&guild_id);
+        send(
+            ctx,
+            &msg.channel_id,
+            &*format!("My prefix for this server is now my default prefix"),
+        )
+        .await;
+    }
     Ok(())
 }

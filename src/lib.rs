@@ -3,7 +3,7 @@ extern crate env_logger;
 extern crate log;
 extern crate serenity;
 
-use std::{collections::HashSet, env, sync::Arc};
+use std::{collections::HashSet, fs, sync::Arc};
 
 use serenity::{
     client::Context,
@@ -22,10 +22,11 @@ use serenity::{
 use tokio::time::{delay_for, Duration};
 
 use crate::util::{
+    config::Config as BotConfig,
     db::get_db_with_defaults,
     groups::*,
     handler::Handler,
-    managers::{Database, ShardManagerContainer},
+    managers::{BotConfig as BotConfigData, Database, Prefixes, ShardManagerContainer},
 };
 
 mod commands;
@@ -112,12 +113,29 @@ async fn dispatch_error(ctx: &Context, msg: &Message, error: DispatchError) {
     }
 }
 
+#[hook]
+async fn dynamic_prefix(ctx: &Context, msg: &Message) -> Option<String> {
+    let data = ctx.data.read().await;
+    let prefixes = data.get::<Prefixes>().unwrap();
+
+    if msg.guild_id.is_some() {
+        return match prefixes.get(&msg.guild_id.unwrap()) {
+            Some(prefix) => Some(prefix.value().to_string()),
+            _ => None,
+        };
+    }
+    None
+}
+
 #[group]
 #[commands(ping)]
 struct General;
 
 pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
-    let token = env::var("DISCORD_TOKEN").expect("token");
+    let config_file = fs::read_to_string("Config.toml").expect("I expect a Config.toml file!");
+    let bot_config: BotConfig = toml::from_str(&config_file).unwrap();
+
+    let token = &bot_config.bot.token;
     let http = Http::new_with_token(&token);
 
     let (owners, bot_id) = match http.get_current_application_info().await {
@@ -136,6 +154,7 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
                 .prefix("!")
                 .on_mention(Some(bot_id))
                 .owners(owners)
+                .dynamic_prefix(dynamic_prefix)
         })
         .help(&MY_HELP)
         .after(after)
@@ -169,10 +188,14 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
 
+    let insert_bot_config = bot_config.clone();
+    let db = get_db_with_defaults().await;
     {
         let mut data = client.data.write().await;
+        data.insert::<BotConfigData>(insert_bot_config);
         data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
-        data.insert::<Database>(get_db_with_defaults().await);
+        data.insert::<Database>(db.clone());
+        data.insert::<Prefixes>(Arc::new(Prefixes::load(db).await));
     }
 
     if let Err(why) = client.start_autosharded().await {
