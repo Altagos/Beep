@@ -37,10 +37,10 @@ async fn default_role(ctx: &Context, msg: &Message, args: Args) -> CommandResult
     let default_role = args.parse::<RoleId>()?;
     let guild_id = msg.guild(ctx).await.unwrap();
 
-    let data = ctx.data.read().await;
-    let db = data
-        .get::<Database>()
-        .expect("I expected a database client but got none :(");
+    let db = {
+        let data = ctx.data.read().await;
+        data.get::<Database>().unwrap().clone()
+    };
     let collection = db.collection("guild_config");
 
     let filter = doc! {"_id": guild_id.id.0};
@@ -92,12 +92,13 @@ async fn prefix(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let prefix = args.single::<String>()?;
     let guild_id = msg.guild_id.unwrap();
 
-    let data = ctx.data.read().await;
-    let prefixes = data.get::<Prefixes>().unwrap();
-    let bot_config = data.get::<BotConfig>().unwrap();
-    let db = data
-        .get::<Database>()
-        .expect("I expected a database client but got none :(");
+    let (prefixes, bot_config, db) = {
+        let data = ctx.data.read().await;
+        let prefixes = data.get::<Prefixes>().unwrap().clone();
+        let bot_config = data.get::<BotConfig>().unwrap().clone();
+        let db = data.get::<Database>().unwrap().clone();
+        (prefixes, bot_config, db)
+    };
     let collection = db.collection("guild_config");
 
     if prefix != "`reset`" && prefix != bot_config.bot.default_prefix {

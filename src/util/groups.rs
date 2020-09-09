@@ -10,7 +10,7 @@ pub struct Moderation;
 #[commands(setup, default_role, prefix)]
 #[prefixes("c", "config")]
 #[description = "
-You can use these command to configure various things fot this command, like the moderation roles.
+You can use these command to configure various things fot this bot, like the moderation roles.
 
 Usage:
 ```

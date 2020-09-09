@@ -181,7 +181,7 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
 
             for (id, runner) in shard_runners.iter() {
                 info!(
-                    "Shard ID {} is {} with a latency of {:?}",
+                    "Shard {} is {} with a latency of {:?}",
                     id, runner.stage, runner.latency,
                 );
             }
@@ -192,6 +192,7 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
     let db = get_db_with_defaults().await;
     {
         let mut data = client.data.write().await;
+
         data.insert::<BotConfigData>(insert_bot_config);
         data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
         data.insert::<Database>(db.clone());
