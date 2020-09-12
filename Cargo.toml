@@ -20,9 +20,9 @@ dashmap = "4.0.0-rc6"
 serde = { version = "1.0", features = ["derive"] }
 futures = "0.3"
 
-[dependencies.lavalink-rs]
-git = "https://gitlab.com/nitsuga5124/lavalink-rs/"
-branch = "master"
+#[dependencies.lavalink-rs]
+#git = "https://gitlab.com/nitsuga5124/lavalink-rs/"
+#branch = "master"
 
 [dependencies.serenity]
 default-features = false
@@ -37,7 +37,6 @@ features = [
     "standard_framework",
     "utils",
     "rustls_backend",
-    "voice"
 ]
 version = "0.9.0-rc.0"
 
