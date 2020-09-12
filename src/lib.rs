@@ -67,7 +67,7 @@ async fn after(ctx: &Context, msg: &Message, cmd_name: &str, error: Result<(), C
                     e.title("Aw Snap!");
                     e.description(error_string);
                     e.field("Command Name", cmd_name, false);
-                    e.field("Error", format!("```{} \n```", why), false);
+                    e.field("Error", format!("```{:?} \n```", why), false);
                     e
                 })
             })
