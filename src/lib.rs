@@ -55,7 +55,7 @@ async fn my_help(
 }
 
 #[hook]
-async fn after(ctx: &Context, msg: &Message, cmd_name: &str, error: Result<()>) {
+async fn after(ctx: &Context, msg: &Message, cmd_name: &str, error: Result<(), CommandResult>) {
     if let Err(why) = error {
         let error_string = "Looks like the bot encountered an error! \n";
 
