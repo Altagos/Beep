@@ -37,11 +37,13 @@ async fn default_role(ctx: &Context, msg: &Message, args: Args) -> CommandResult
     let default_role = args.parse::<RoleId>()?;
     let guild_id = msg.guild(ctx).await.unwrap();
 
-    let db = {
+    let collection = {
         let data = ctx.data.read().await;
-        data.get::<Database>().unwrap().clone()
+        data.get::<Database>()
+            .unwrap()
+            .clone()
+            .collection("guild_config")
     };
-    let collection = db.collection("guild_config");
 
     let filter = doc! {"_id": guild_id.id.0};
     let doc = doc! {"$set": {"default_role": default_role.0}};
@@ -80,7 +82,7 @@ async fn default_role(ctx: &Context, msg: &Message, args: Args) -> CommandResult
 /// Usage:
 /// ```discord
 /// !config prefix <custom_prefix>
-/// !config prefix `reset`
+/// !c prefix `reset`
 /// ```
 #[command]
 #[only_in(guild)]

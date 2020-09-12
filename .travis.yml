@@ -1,0 +1,64 @@
+dist: trusty
+language: rust
+services: docker
+sudo: required
+env:
+  global:
+  - CRATE_NAME=beep
+  - secure: HsCAbIdIq3U/gkzJECuIISrJX+ujWeNhE+edk+hbaZIU5+VkhYqXuJoOzn1zTHX9nShrEtt5PHoCGttkFUsryE+IEbD+uT1WUUSS5O5tgQIDLEpjgNvX1QASF3HCPZCAkBe6pjR5X+TFXzKIebQUZbcPp3DIw57pw7Veemsj6iJEaQ7ABXD3scIesBKL6pgMkbRz1Wd1sB9DEbtqjFGY1O8E4LyL0JAWoFBKNR1XXSLrMdvG7XgvMH16vO3cwQ95858wVnZB0w3Y6sr1bL3d0E/GEKW77u4Be/xz3j/Hj5zgabh5iWIwq0ibi0A1C/zqo11obC2rMR0rItMy0uo7YwKq9pZYhIq5wdzA1mz2sUhXl+nK3wcGFk/2U020C6wnZk9yXKzHjneF4iJjkzwlX3kSydu4ra2naI2PylhwdGFEbD5EQP6EgYNNvtCfCUjWuJW/yro16hgf3gfA5rQ0eLzR71FLCgGsL8uyBS0LBR0UnGHQ0WpmnBQ8x07abyLpHE2KWaQ6SbSWhsGHW8wg8xQrFlF37pfeX3D/gwZ+j5BIDLRGZSlj/K6aCXyhIN5yj2/vDFRyQBUr5By9Bbajdgm1eZ3lUaVlefdTGFVe7BiXGf3a6DYXJnj339xL7QJt8tYaLrKe5wN2V3UJ7+qvelSNWLal90kxyqdR01VZOuE=
+matrix:
+  include:
+  - env: TARGET=aarch64-unknown-linux-gnu
+    rust: nightly
+  - env: TARGET=arm-unknown-linux-gnueabi
+  - env: TARGET=armv7-unknown-linux-gnueabihf
+  - env: TARGET=i686-unknown-linux-gnu
+  - env: TARGET=i686-unknown-linux-musl
+  - env: TARGET=mips-unknown-linux-gnu
+  - env: TARGET=mips64-unknown-linux-gnuabi64
+  - env: TARGET=mips64el-unknown-linux-gnuabi64
+  - env: TARGET=mipsel-unknown-linux-gnu
+  - env: TARGET=powerpc-unknown-linux-gnu
+  - env: TARGET=powerpc64-unknown-linux-gnu
+  - env: TARGET=powerpc64le-unknown-linux-gnu
+  - env: TARGET=s390x-unknown-linux-gnu DISABLE_TESTS=1
+  - env: TARGET=x86_64-unknown-linux-gnu
+  - env: TARGET=x86_64-unknown-linux-musl
+  - env: TARGET=i686-unknown-freebsd DISABLE_TESTS=1
+  - env: TARGET=x86_64-unknown-freebsd DISABLE_TESTS=1
+  - env: TARGET=x86_64-unknown-netbsd DISABLE_TESTS=1
+  - env: TARGET=x86_64-pc-windows-gnu
+    rust: nightly
+  - env: TARGET=x86_64-unknown-linux-gnu
+    rust: nightly
+before_install:
+- set -e
+- rustup self update
+install:
+- sh ci/install.sh
+- source ~/.cargo/env || true
+script:
+- bash ci/script.sh
+after_script: set +e
+before_deploy:
+- sh ci/before_deploy.sh
+deploy:
+  api_key:
+    secure: A9v3PIzQQ4U08OHFmDPQzNXbNHEb7YHyLXCvMF+dXFuNSvhUNlmQYykxqUf3dvikhJL2/bsZ14umm7ni7fQh0tGwJ4+lPpNzYAcweGgNXnWvjTpY6ovuRbr3gs4/srkyxp/GBDmSW5L8wFN3hKCB+Lm0YnIPB9IA2afP8a30+8VTXT9nv7pNqGny4ilN41ycr4DZi3sQoXdbruy7ClN7gsWW/GUiudBccHVIjmTapOFKLwZHODaUl/1/RDWQzh+i+17e1ivXuJPktDSrqmHPTZ15OjklnHKd6t179ry6VkGRg4R/R/YukVIqGzeaXGWAwdAQ5gE8cjGZghJLVi2jkDBJ85z8MvT+zLZLyliiuhLc/X8y7mkE1n0FKFtXXzFVt0l7V1LaEKbIbiV6XX3jsir4qgkqWjPHBZqO5mkGNFS16Dmt30/ZtEPAzXiINFXbWuWrpQ/LZ4NSto8IMrRTcoyDbAga/KYxJiNIeVuCe1E9dbytDM7K0GLtxJTul/WnnSeI6r//EFyC4bxYjyHhCXaag4q14KM+ak4rB0QgxsYzyGuh2MqyCoVj8YJLjLdKnL/SV7W7LPD40xlxvI6VCYTVi2ILHwL6vCxpukXYteX0c5IAIWkISDKu6nNBEgmCHXXPSqYSrgE5g7/QoCQHI8++nR8iKe0s7TWxZRydby8=
+  file_glob: true
+  file: "$CRATE_NAME-$TRAVIS_TAG-$TARGET.*"
+  on:
+    condition: "$TRAVIS_RUST_VERSION = nightly"
+    tags: true
+  provider: releases
+  skip_cleanup: true
+cache: cargo
+before_cache:
+- chmod -R a+r $HOME/.cargo
+branches:
+  only:
+  - "/^v\\d+\\.\\d+\\.\\d+.*$/"
+  - master
+notifications:
+  email:
+    on_success: never

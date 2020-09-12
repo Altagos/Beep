@@ -1,13 +1,17 @@
 use serenity::framework::standard::macros::group;
 
-use crate::commands::{config::general::*, dnd::dice::*, moderation::*};
+use crate::commands::{
+    config::{general::*, moderation::*},
+    dnd::dice::*,
+    moderation::*,
+};
 
 #[group]
 #[commands(kick)]
 pub struct Moderation;
 
 #[group]
-#[commands(setup, default_role, prefix)]
+#[commands(setup, default_role, prefix, moderation_role)]
 #[prefixes("c", "config")]
 #[description = "
 You can use these command to configure various things fot this bot, like the moderation roles.

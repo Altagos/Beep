@@ -9,6 +9,7 @@ pub mod db;
 pub mod groups;
 pub mod handler;
 pub mod managers;
+pub mod permission;
 
 pub async fn send(ctx: &Context, channel: &ChannelId, content: &str) {
     if let Err(why) = channel.say(ctx, content).await {

@@ -1,6 +1,6 @@
 [package]
 name = "beep"
-version = "0.1.2-alpha.0"
+version = "0.1.2"
 authors = ["Altagos <altagos@posteo.de>"]
 edition = "2018"
 description = "A Discord Bot"
@@ -10,7 +10,7 @@ publish = false
 
 [dependencies]
 tokio = { version = "0.2", features = ["macros"] }
-env_logger = "0.6"
+pretty_env_logger = "0.3"
 log = "0.4"
 kankyo = "0.2"
 toml = "0.5"

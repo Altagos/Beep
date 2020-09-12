@@ -17,7 +17,7 @@ use crate::util::config::Config;
 pub struct BotConfig;
 
 impl TypeMapKey for BotConfig {
-    type Value = Config;
+    type Value = Arc<Config>;
 }
 
 pub struct ShardManagerContainer;

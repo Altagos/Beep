@@ -1,4 +1,4 @@
-extern crate env_logger;
+extern crate pretty_env_logger;
 #[macro_use]
 extern crate log;
 extern crate serenity;
@@ -55,7 +55,7 @@ async fn my_help(
 }
 
 #[hook]
-async fn after(ctx: &Context, msg: &Message, cmd_name: &str, error: Result<(), CommandError>) {
+async fn after(ctx: &Context, msg: &Message, cmd_name: &str, error: Result<()>) {
     if let Err(why) = error {
         let error_string = "Looks like the bot encountered an error! \n";
 
@@ -193,7 +193,7 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
     {
         let mut data = client.data.write().await;
 
-        data.insert::<BotConfigData>(insert_bot_config);
+        data.insert::<BotConfigData>(Arc::new(insert_bot_config));
         data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
         data.insert::<Database>(db.clone());
         data.insert::<Prefixes>(Arc::new(Prefixes::load(db).await));
