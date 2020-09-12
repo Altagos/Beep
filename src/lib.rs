@@ -11,7 +11,7 @@ use serenity::{
         standard::{
             help_commands,
             macros::{command, group, help, hook},
-            Args, CommandError, CommandGroup, CommandResult, DispatchError, HelpOptions,
+            Args, CommandGroup, CommandResult, DispatchError, HelpOptions,
         },
         StandardFramework,
     },
@@ -55,7 +55,7 @@ async fn my_help(
 }
 
 #[hook]
-async fn after(ctx: &Context, msg: &Message, cmd_name: &str, error: Result<(), CommandResult>) {
+async fn after(ctx: &Context, msg: &Message, cmd_name: &str, error: CommandResult) {
     if let Err(why) = error {
         let error_string = "Looks like the bot encountered an error! \n";
 
