@@ -1,10 +1,9 @@
-use std::{collections::hash_map::RandomState, sync::Arc};
-
+use crate::util::config::Config;
 use dashmap::DashMap;
 use futures::StreamExt;
 use mongodb::{
     bson::{doc, Bson},
-    options::FindOptions,
+    options::{FindOneOptions, FindOptions},
     Collection,
 };
 use serenity::{
@@ -12,11 +11,7 @@ use serenity::{
     model::id::GuildId,
     prelude::{Mutex, TypeMapKey},
 };
-
-use crate::util::config::Config;
-use mongodb::options::{Collation, FindOneOptions};
-use serenity::framework::standard::CommandError;
-use std::error::Error;
+use std::{collections::hash_map::RandomState, sync::Arc};
 
 pub struct BotConfig;
 

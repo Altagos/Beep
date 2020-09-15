@@ -5,6 +5,13 @@ extern crate serenity;
 
 use std::{collections::HashSet, fs, sync::Arc};
 
+use crate::util::{
+    config::Config as BotConfig,
+    db::get_db_with_defaults,
+    groups::*,
+    handler::Handler,
+    managers::{BotConfig as BotConfigData, Database, Prefixes, ShardManagerContainer},
+};
 use serenity::{
     client::Context,
     framework::{
@@ -20,14 +27,6 @@ use serenity::{
     Client,
 };
 use tokio::time::{delay_for, Duration};
-
-use crate::util::{
-    config::Config as BotConfig,
-    db::get_db_with_defaults,
-    groups::*,
-    handler::Handler,
-    managers::{BotConfig as BotConfigData, Database, Prefixes, ShardManagerContainer},
-};
 
 mod commands;
 mod util;

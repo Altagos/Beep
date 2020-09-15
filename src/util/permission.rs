@@ -8,7 +8,7 @@ use serenity::{
     prelude::*,
 };
 
-pub async fn check_moderator_db(
+pub async fn _check_moderator_db(
     ctx: &Context,
     msg: &Message,
 ) -> Result<bool, Box<dyn std::error::Error + Send + Sync>> {

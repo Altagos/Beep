@@ -19,6 +19,7 @@ rand = "0.7"
 dashmap = "4.0.0-rc6"
 serde = { version = "1.0", features = ["derive"] }
 futures = "0.3"
+async-trait = "0.1.40"
 
 #[dependencies.lavalink-rs]
 #git = "https://gitlab.com/nitsuga5124/lavalink-rs/"

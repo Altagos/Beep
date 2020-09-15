@@ -1,16 +1,13 @@
+use crate::util::{embed_store::EmbedStore, managers::Database};
 use mongodb::bson::doc;
 use serenity::{
     framework::standard::{macros::command, Args, CommandResult},
-    model::channel::Message,
+    model::{
+        channel::Message,
+        id::{ChannelId, RoleId},
+        prelude::*,
+    },
     prelude::Context,
-};
-
-use crate::util::{managers::Database, send};
-use mongodb::options::FindOneOptions;
-use serenity::model::{
-    channel::ChannelCategory,
-    id::{ChannelId, RoleId},
-    prelude::*,
 };
 
 #[command]
@@ -42,12 +39,7 @@ async fn create(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         match Database::guild_config_get_id(&gc_collection, &guild_id, "moderation_role").await {
             Some(role_id) => RoleId(role_id),
             _ => {
-                send(
-                    ctx,
-                    &msg.channel_id,
-                    "Could not create a new ticket for you",
-                )
-                .await;
+                EmbedStore::ticket_failure(ctx, msg).await;
                 error!("Error: Mod");
                 return Ok(());
             }
@@ -55,14 +47,9 @@ async fn create(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 
     let ticket_category =
         match Database::guild_config_get_id(&gc_collection, &guild_id, "ticket_category").await {
-            Some(category_id) => ChannelId(category_id),
+            Some(category_id) => category_id,
             _ => {
-                send(
-                    ctx,
-                    &msg.channel_id,
-                    "Could not create a new ticket for you",
-                )
-                .await;
+                EmbedStore::ticket_failure(ctx, msg).await;
                 error!("Error: Ticket");
                 return Ok(());
             }
@@ -92,19 +79,19 @@ async fn create(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
                 .id,
         ),
     };
-    let guild = msg.guild(&ctx).await.unwrap();
-    let cat = guild.channels.get(&ticket_category);
-    info!("Cat: {:?}", cat);
 
     let channel = guild_id
         .create_channel(&ctx, |c| {
             c.name(channel_title)
-                .category::<ChannelId>(ticket_category)
+                // .category(ticket_category)
                 .permissions::<Vec<PermissionOverwrite>>(vec![
                     author_perms,
                     everyone_perms,
                     mod_perms,
                 ])
+                .kind(ChannelType::Text)
+                .topic(&description)
+                .category(ticket_category)
         })
         .await;
     match channel {
@@ -118,23 +105,15 @@ async fn create(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
             };
 
             if let Err(why) = ticket_collection.insert_one(insert, None).await {
-                send(
-                    ctx,
-                    &msg.channel_id,
-                    "Could not create a new ticket for you",
-                )
-                .await;
+                EmbedStore::ticket_failure(ctx, msg).await;
                 error!("Unable to create a ticket for {}: {}", guild_id.0, why);
                 return Ok(());
+            } else {
+                EmbedStore::ticket_success(ctx, msg, &c).await;
             }
         }
         Err(why) => {
-            send(
-                ctx,
-                &msg.channel_id,
-                "Could not create a new ticket for you",
-            )
-            .await;
+            EmbedStore::ticket_failure(ctx, msg).await;
             error!("Unable to create a ticket for {}: {}", guild_id.0, why);
             return Ok(());
         }
