@@ -9,6 +9,7 @@ use crate::util::send;
 pub mod config;
 pub mod dnd;
 pub mod moderation;
+pub mod ticket;
 
 #[command]
 async fn basic_command(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {

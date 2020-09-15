@@ -1,4 +1,4 @@
-extern crate pretty_env_logger;
+extern crate tracing_subscriber;
 #[macro_use]
 extern crate log;
 extern crate serenity;
@@ -155,6 +155,7 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
                 .on_mention(Some(bot_id))
                 .owners(owners)
                 .dynamic_prefix(dynamic_prefix)
+                .delimiters(vec![", ", ","])
         })
         .help(&MY_HELP)
         .after(after)
@@ -162,6 +163,7 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
         .group(&GENERAL_GROUP)
         .group(&MODERATION_GROUP)
         .group(&CONFIG_GROUP)
+        .group(&TICKET_GROUP)
         .group(&DND_GROUP);
 
     let mut client = Client::new(&token)

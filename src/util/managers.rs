@@ -5,6 +5,7 @@ use futures::StreamExt;
 use mongodb::{
     bson::{doc, Bson},
     options::FindOptions,
+    Collection,
 };
 use serenity::{
     client::bridge::gateway::ShardManager,
@@ -13,6 +14,9 @@ use serenity::{
 };
 
 use crate::util::config::Config;
+use mongodb::options::{Collation, FindOneOptions};
+use serenity::framework::standard::CommandError;
+use std::error::Error;
 
 pub struct BotConfig;
 
@@ -67,5 +71,36 @@ impl Prefixes {
 
         info!("Loaded prefixes");
         prefixes
+    }
+}
+
+impl Database {
+    pub async fn guild_config_get_id(
+        collection: &Collection,
+        guild_id: &GuildId,
+        key: &str,
+    ) -> Option<u64> {
+        let mut find_options = FindOneOptions::default();
+        find_options.projection = Some(doc! {key: 1});
+        let filter = doc! {"_id": guild_id.0, key: {"$exists": true}};
+        return match collection.find_one(filter, find_options).await {
+            Ok(document) => match document {
+                Some(doc) => {
+                    if let Some(data) = doc.get(key).and_then(Bson::as_i64) {
+                        Some(data as u64)
+                    } else {
+                        None
+                    }
+                }
+                None => {
+                    error!("{} is NONE", key);
+                    None
+                }
+            },
+            Err(why) => {
+                error!("Error getting {} from db: {}", key, why);
+                None
+            }
+        };
     }
 }

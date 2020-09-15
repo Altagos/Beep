@@ -4,6 +4,7 @@ use crate::commands::{
     config::{general::*, moderation::*},
     dnd::dice::*,
     moderation::*,
+    ticket::create::*
 };
 
 #[group]
@@ -23,6 +24,13 @@ Usage:
 ```
 "]
 pub struct Config;
+
+#[group]
+#[commands(create)]
+#[prefixes("t", "ticket")]
+#[description = "
+"]
+pub struct Ticket;
 
 #[group]
 #[commands(roll)]
