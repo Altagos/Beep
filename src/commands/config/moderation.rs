@@ -12,7 +12,7 @@ use serenity::{
 #[owner_privilege(true)]
 #[num_args(1)]
 async fn moderation_role(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
-    let mod_role = args.single::<RoleId>()?;
+    let _mod_role = args.single::<RoleId>()?;
     let guild_id = msg.guild(ctx).await.unwrap();
 
     let collection = {
@@ -23,8 +23,10 @@ async fn moderation_role(ctx: &Context, msg: &Message, mut args: Args) -> Comman
             .collection("guild_config")
     };
 
+    let role = stringify!(_mod_role.0);
+
     let filter = doc! {"_id": guild_id.id.0};
-    let doc = doc! {"$set": {"moderation_role": mod_role.0}};
+    let doc = doc! {"$set": {"moderation_role": role}};
     let mut options = UpdateOptions::default();
     options.upsert = Some(true);
 

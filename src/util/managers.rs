@@ -81,16 +81,20 @@ impl Database {
         return match collection.find_one(filter, find_options).await {
             Ok(document) => match document {
                 Some(doc) => {
-                    if let Some(data) = doc.get(key).and_then(Bson::as_i64) {
-                        Some(data as u64)
+                    if let Some(data) = doc.get(key).and_then(Bson::as_str) {
+                        let data = data as &str;
+                        match data.parse::<u64>() {
+                            Ok(id) => Some(id),
+                            Err(why) => {
+                                error!("Error: {}", why);
+                                None
+                            }
+                        }
                     } else {
                         None
                     }
                 }
-                None => {
-                    error!("{} is NONE", key);
-                    None
-                }
+                None => None,
             },
             Err(why) => {
                 error!("Error getting {} from db: {}", key, why);

@@ -29,6 +29,8 @@ async fn create(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
             .collection("guild_config")
     };
 
+    let guild = msg.guild(&ctx).await.unwrap();
+
     let title = args.single_quoted::<String>()?;
     let channel_title = title.clone();
     let description = args.rest().to_string();
@@ -54,6 +56,14 @@ async fn create(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
                 return Ok(());
             }
         };
+
+    let category = match guild.channels.get(&ChannelId(ticket_category)) {
+        Some(cat) => cat,
+        None => {
+            error!("Error: Category");
+            return Ok(());
+        }
+    };
 
     let author_perms = PermissionOverwrite {
         allow: Permissions::READ_MESSAGES,
@@ -91,9 +101,10 @@ async fn create(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
                 ])
                 .kind(ChannelType::Text)
                 .topic(&description)
-                .category(ticket_category)
+                .category(category)
         })
         .await;
+
     match channel {
         Ok(c) => {
             let insert = doc! {
