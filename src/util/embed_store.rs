@@ -1,11 +1,18 @@
 use serenity::{
     client::Context,
-    model::{
-        channel::{GuildChannel, Message},
-        misc::Mentionable,
-    },
+    model::{channel::GuildChannel, id::ChannelId, misc::Mentionable, user::User},
     utils::Color,
 };
+
+pub enum TicketEmbed {
+    Success(GuildChannel),
+    Description {
+        author: User,
+        title: String,
+        description: String,
+    },
+    Failure,
+}
 
 pub struct EmbedStore;
 
@@ -25,41 +32,40 @@ impl EmbedStore {
     //     }
     // }
 
-    // Ticket System
-    pub async fn ticket_failure(ctx: &Context, msg: &Message) {
-        if let Err(why) = msg
-            .channel_id
+    pub async fn ticket(state: TicketEmbed, ctx: &Context, channel_id: &ChannelId) {
+        if let Err(why) = channel_id
             .send_message(&ctx, |m| {
-                m.embed(|e| {
-                    e.title("Error")
+                m.embed(|e| match state {
+                    TicketEmbed::Success(c) => e
+                        .title("New Ticket")
+                        .description(format!("Please go to {}", c.mention()))
+                        .color(Color::from_rgb(73, 248, 22)),
+                    TicketEmbed::Failure => e
+                        .title("Error")
                         .description("Error creating a ticket for you!")
-                        .color(Color::RED)
+                        .color(Color::RED),
+                    TicketEmbed::Description {
+                        author,
+                        title,
+                        description: desc,
+                    } => e
+                        .author(|a| {
+                            if let Some(url) = author.avatar_url() {
+                                a.name(author.name).icon_url(url)
+                            } else {
+                                a.name(author.name)
+                            }
+                        })
+                        .title::<String>(title)
+                        .description(desc)
+                        .color(Color::from_rgb(73, 248, 22)),
                 })
             })
             .await
         {
             error!(
                 "Error sending message (channel_id: {}): {}",
-                msg.channel_id, why
-            );
-        }
-    }
-
-    pub async fn ticket_success(ctx: &Context, msg: &Message, ticket_channel: &GuildChannel) {
-        if let Err(why) = msg
-            .channel_id
-            .send_message(&ctx, |m| {
-                m.embed(|e| {
-                    e.title("New Ticket")
-                        .description(format!("Please go to {}", ticket_channel.mention()))
-                        .color(Color::from_rgb(73, 248, 22))
-                })
-            })
-            .await
-        {
-            error!(
-                "Error sending message (channel_id: {}): {}",
-                msg.channel_id, why
+                channel_id, why
             );
         }
     }

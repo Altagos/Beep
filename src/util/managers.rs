@@ -1,3 +1,4 @@
+use super::database_store::DatabaseStore as DatabaseStoreStruct;
 use crate::util::config::Config;
 use dashmap::DashMap;
 use futures::StreamExt;
@@ -29,6 +30,12 @@ pub struct Database;
 
 impl TypeMapKey for Database {
     type Value = mongodb::Database;
+}
+
+pub struct DatabaseStore;
+
+impl TypeMapKey for DatabaseStore {
+    type Value = Arc<DatabaseStoreStruct>;
 }
 
 pub struct Prefixes;

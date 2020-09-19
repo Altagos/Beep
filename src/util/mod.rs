@@ -5,6 +5,7 @@ use serenity::{
 };
 
 pub mod config;
+pub mod database_store;
 pub mod db;
 pub mod embed_store;
 pub mod groups;

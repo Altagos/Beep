@@ -7,10 +7,13 @@ use std::{collections::HashSet, fs, sync::Arc};
 
 use crate::util::{
     config::Config as BotConfig,
+    database_store::DatabaseStore as DatabaseStoreStruct,
     db::get_db_with_defaults,
     groups::*,
     handler::Handler,
-    managers::{BotConfig as BotConfigData, Database, Prefixes, ShardManagerContainer},
+    managers::{
+        BotConfig as BotConfigData, Database, DatabaseStore, Prefixes, ShardManagerContainer,
+    },
 };
 use serenity::{
     client::Context,
@@ -197,6 +200,7 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
         data.insert::<BotConfigData>(Arc::new(insert_bot_config));
         data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
         data.insert::<Database>(db.clone());
+        data.insert::<DatabaseStore>(Arc::new(DatabaseStoreStruct::new(db.clone())));
         data.insert::<Prefixes>(Arc::new(Prefixes::load(db).await));
     }
 

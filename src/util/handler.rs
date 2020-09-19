@@ -1,3 +1,7 @@
+use crate::util::{
+    get_bot_id,
+    managers::{Database, DatabaseStore},
+};
 use mongodb::bson::doc;
 use serenity::{
     async_trait,
@@ -9,8 +13,6 @@ use serenity::{
         user::User,
     },
 };
-
-use crate::util::{db::get_default_role, get_bot_id, managers::Database};
 
 pub struct Handler;
 
@@ -35,11 +37,17 @@ impl EventHandler for Handler {
         if new_member.user.bot {
             return;
         }
-        let default_role = get_default_role(&ctx, &guild_id).await;
+
+        let default_role = {
+            let data = ctx.data.read().await;
+            let database_store = data.get::<DatabaseStore>().unwrap();
+            database_store.get_default_role(guild_id).await
+        };
+
         match default_role {
             Some(default_role) => {
                 if let Err(why) = new_member.add_role(ctx, default_role).await {
-                    error!("Could not add role to member: {}", why);
+                    warn!("Could not add role to member: {}", why);
                 }
             }
             _ => {}

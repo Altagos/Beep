@@ -1,4 +1,7 @@
-use crate::util::{embed_store::EmbedStore, managers::Database};
+use crate::util::{
+    embed_store::{EmbedStore, TicketEmbed},
+    managers::Database,
+};
 use mongodb::bson::doc;
 use serenity::{
     framework::standard::{macros::command, Args, CommandResult},
@@ -41,8 +44,7 @@ async fn create(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         match Database::guild_config_get_id(&gc_collection, &guild_id, "moderation_role").await {
             Some(role_id) => RoleId(role_id),
             _ => {
-                EmbedStore::ticket_failure(ctx, msg).await;
-                error!("Error: Mod");
+                EmbedStore::ticket(TicketEmbed::Failure, ctx, &msg.channel_id).await;
                 return Ok(());
             }
         };
@@ -51,8 +53,7 @@ async fn create(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         match Database::guild_config_get_id(&gc_collection, &guild_id, "ticket_category").await {
             Some(category_id) => category_id,
             _ => {
-                EmbedStore::ticket_failure(ctx, msg).await;
-                error!("Error: Ticket");
+                EmbedStore::ticket(TicketEmbed::Failure, ctx, &msg.channel_id).await;
                 return Ok(());
             }
         };
@@ -60,7 +61,7 @@ async fn create(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let category = match guild.channels.get(&ChannelId(ticket_category)) {
         Some(cat) => cat,
         None => {
-            error!("Error: Category");
+            EmbedStore::ticket(TicketEmbed::Failure, ctx, &msg.channel_id).await;
             return Ok(());
         }
     };
@@ -108,23 +109,34 @@ async fn create(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     match channel {
         Ok(c) => {
             let insert = doc! {
-                "guild_id": guild_id.0,
-                "channel_id": c.id.0,
-                "author_id": author_id.0,
-                "title": title,
-                "description": description
+                "guild_id": &guild_id.0,
+                "channel_id": &c.id.0,
+                "author_id": &author_id.0,
+                "title": &title,
+                "description": &description
             };
 
             if let Err(why) = ticket_collection.insert_one(insert, None).await {
-                EmbedStore::ticket_failure(ctx, msg).await;
+                EmbedStore::ticket(TicketEmbed::Failure, ctx, &msg.channel_id).await;
                 error!("Unable to create a ticket for {}: {}", guild_id.0, why);
                 return Ok(());
             } else {
-                EmbedStore::ticket_success(ctx, msg, &c).await;
+                let author: User = author_id.to_user(&ctx).await?;
+                EmbedStore::ticket(
+                    TicketEmbed::Description {
+                        author,
+                        title,
+                        description,
+                    },
+                    ctx,
+                    &c.id,
+                )
+                .await;
+                EmbedStore::ticket(TicketEmbed::Success(c), ctx, &msg.channel_id).await;
             }
         }
         Err(why) => {
-            EmbedStore::ticket_failure(ctx, msg).await;
+            EmbedStore::ticket(TicketEmbed::Failure, ctx, &msg.channel_id).await;
             error!("Unable to create a ticket for {}: {}", guild_id.0, why);
             return Ok(());
         }
