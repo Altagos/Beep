@@ -110,7 +110,7 @@ async fn dispatch_error(ctx: &Context, msg: &Message, error: DispatchError) {
                 .say(ctx, "This is a bot dev only command!")
                 .await;
         }
-        DispatchError::IgnoredBot => {}
+        // DispatchError::IgnoredBot => {}
         _ => println!("Unhandled dispatch error: {:?}", error),
     }
 }

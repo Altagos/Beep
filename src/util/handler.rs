@@ -1,4 +1,5 @@
 use crate::util::{
+    database_store::enums::{DatabaseCollections, GuildConfigData, GuildConfigKey, StoreResult},
     get_bot_id,
     managers::{Database, DatabaseStore},
 };
@@ -38,19 +39,26 @@ impl EventHandler for Handler {
             return;
         }
 
-        let default_role = {
+        {
             let data = ctx.data.read().await;
             let database_store = data.get::<DatabaseStore>().unwrap();
-            database_store.get_default_role(guild_id).await
-        };
 
-        match default_role {
-            Some(default_role) => {
-                if let Err(why) = new_member.add_role(ctx, default_role).await {
-                    warn!("Could not add role to member: {}", why);
+            if let StoreResult::Guild(data) = database_store
+                .get(DatabaseCollections::GuildConfig {
+                    id: guild_id.0,
+                    key: GuildConfigKey::DefaultRole,
+                })
+                .await
+            {
+                if let GuildConfigData::DefaultRole(role) = data {
+                    if let Err(why) = new_member.add_role(&ctx, role).await {
+                        warn!(
+                            "Could not add role to member (guild_id: {}): {}",
+                            &guild_id, why
+                        );
+                    }
                 }
             }
-            _ => {}
         }
     }
 

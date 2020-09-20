@@ -1,6 +1,7 @@
 use crate::util::{
+    database_store::enums::{DatabaseCollections, GuildConfigData, GuildConfigKey, StoreResult},
     embed_store::{EmbedStore, TicketEmbed},
-    managers::Database,
+    managers::{Database, DatabaseStore},
 };
 use mongodb::bson::doc;
 use serenity::{
@@ -31,6 +32,10 @@ async fn create(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
             .clone()
             .collection("guild_config")
     };
+    let database_store = {
+        let data = ctx.data.read().await;
+        data.get::<DatabaseStore>().unwrap().clone()
+    };
 
     let guild = msg.guild(&ctx).await.unwrap();
 
@@ -40,14 +45,34 @@ async fn create(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let guild_id = msg.guild_id.unwrap();
     let author_id = msg.author.id;
 
-    let moderation_role =
-        match Database::guild_config_get_id(&gc_collection, &guild_id, "moderation_role").await {
-            Some(role_id) => RoleId(role_id),
-            _ => {
+    // let moderation_role =
+    //     match Database::guild_config_get_id(&gc_collection, &guild_id, "moderation_role").await {
+    //         Some(role_id) => RoleId(role_id),
+    //         _ => {
+    //             EmbedStore::ticket(TicketEmbed::Failure, ctx, &msg.channel_id).await;
+    //             return Ok(());
+    //         }
+    //     };
+    let moderation_role = match database_store
+        .get(DatabaseCollections::GuildConfig {
+            id: guild_id.0,
+            key: GuildConfigKey::ModerationRole,
+        })
+        .await
+    {
+        StoreResult::Guild(data) => {
+            if let GuildConfigData::ModerationRole(role) = data {
+                role
+            } else {
                 EmbedStore::ticket(TicketEmbed::Failure, ctx, &msg.channel_id).await;
                 return Ok(());
             }
-        };
+        }
+        _ => {
+            EmbedStore::ticket(TicketEmbed::Failure, ctx, &msg.channel_id).await;
+            return Ok(());
+        }
+    };
 
     let ticket_category =
         match Database::guild_config_get_id(&gc_collection, &guild_id, "ticket_category").await {
