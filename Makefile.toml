@@ -1,4 +1,4 @@
 [tasks.debug]
 install_crate = "cargo-watch"
 command = "cargo"
-args = ["watch", "-x run"]
+args = ["watch", "-x run -p bot"]

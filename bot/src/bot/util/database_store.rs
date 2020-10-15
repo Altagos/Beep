@@ -1,4 +1,4 @@
-use crate::util::{
+use crate::bot::util::{
     database_store::enums::{
         DatabaseCollections, GuildConfigData, GuildConfigKey, StoreResult, TicketKey,
     },
@@ -49,7 +49,7 @@ impl DatabaseStore {
     }
 
     #[allow(dead_code, unused_variables)]
-    pub async fn get(&self, collection: DatabaseCollections) -> StoreResult {
+    pub async fn fetch(&self, collection: DatabaseCollections) -> StoreResult {
         return match collection {
             DatabaseCollections::GuildConfig { id, key } => self.gc_handle(id, key).await,
             DatabaseCollections::PermissionOverwrites { id, key } => po_handle(id, key).await,

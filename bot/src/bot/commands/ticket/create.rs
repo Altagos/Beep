@@ -1,4 +1,4 @@
-use crate::util::{
+use crate::bot::util::{
     database_store::enums::{DatabaseCollections, GuildConfigData, GuildConfigKey, StoreResult},
     embed_store::{EmbedStore, TicketEmbed},
     managers::{Database, DatabaseStore},
@@ -54,7 +54,7 @@ async fn create(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     //         }
     //     };
     let moderation_role = match database_store
-        .get(DatabaseCollections::GuildConfig {
+        .fetch(DatabaseCollections::GuildConfig {
             id: guild_id.0,
             key: GuildConfigKey::ModerationRole,
         })

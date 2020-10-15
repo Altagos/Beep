@@ -1,10 +1,9 @@
+use crate::bot::util::send;
 use serenity::{
     framework::standard::{macros::command, Args, CommandResult},
     model::channel::Message,
     prelude::Context,
 };
-
-use crate::util::send;
 
 pub mod config;
 pub mod dnd;

@@ -1,13 +1,12 @@
+use crate::bot::util::{
+    managers::{BotConfig, Database, Prefixes},
+    send,
+};
 use mongodb::{bson::doc, options::UpdateOptions};
 use serenity::{
     framework::standard::{macros::command, Args, CommandResult},
     model::{channel::Message, id::RoleId},
     prelude::{Context, Mentionable},
-};
-
-use crate::util::{
-    managers::{BotConfig, Database, Prefixes},
-    send,
 };
 
 ///Use this command to setup the bot for this guild

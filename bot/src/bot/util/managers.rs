@@ -1,5 +1,5 @@
 use super::database_store::DatabaseStore as DatabaseStoreStruct;
-use crate::util::config::Config;
+use crate::bot::util::config::Config;
 use dashmap::DashMap;
 use futures::StreamExt;
 use mongodb::{

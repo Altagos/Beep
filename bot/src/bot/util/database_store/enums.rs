@@ -1,4 +1,4 @@
-use crate::util::permission::enums::{PermissionOverwriteData, PermissionOverwriteKey};
+use crate::bot::util::permission::enums::{PermissionOverwriteData, PermissionOverwriteKey};
 use serenity::model::prelude::*;
 
 #[allow(dead_code)]

@@ -1,10 +1,10 @@
 use serenity::framework::standard::macros::group;
 
-use crate::commands::{
+use crate::bot::commands::{
     config::{general::*, moderation::*},
     dnd::dice::*,
     moderation::*,
-    ticket::create::*
+    ticket::create::*,
 };
 
 #[group]

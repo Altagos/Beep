@@ -1,11 +1,4 @@
-extern crate tracing_subscriber;
-#[macro_use]
-extern crate log;
-extern crate serenity;
-
-use std::{collections::HashSet, fs, sync::Arc};
-
-use crate::util::{
+use crate::bot::util::{
     config::Config as BotConfig,
     database_store::DatabaseStore as DatabaseStoreStruct,
     db::get_db_with_defaults,
@@ -29,6 +22,7 @@ use serenity::{
     model::{channel::Message, prelude::*},
     Client,
 };
+use std::{collections::HashSet, fs, sync::Arc};
 use tokio::time::{delay_for, Duration};
 
 mod commands;

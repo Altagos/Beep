@@ -1,11 +1,10 @@
+use crate::bot::util::send;
 use rand::Rng;
 use serenity::{
     framework::standard::{macros::command, Args, CommandResult},
     model::channel::Message,
     prelude::Context,
 };
-
-use crate::util::send;
 
 #[command]
 pub async fn roll(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {

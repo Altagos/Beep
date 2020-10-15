@@ -1,4 +1,4 @@
-use crate::util::{managers::Database, send};
+use crate::bot::util::{managers::Database, send};
 use mongodb::{bson::doc, options::UpdateOptions};
 use serenity::{
     framework::standard::{macros::command, Args, CommandResult},

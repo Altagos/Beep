@@ -1,0 +1,53 @@
+[package]
+name = "beep"
+version = "0.3.2-alpha.0"
+authors = ["Altagos <altagos@posteo.de>"]
+edition = "2018"
+description = "A Discord Bot"
+publish = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "0.2", features = ["macros"] }
+tracing-subscriber = "0.2.12"
+log = "0.4"
+kankyo = "0.2"
+toml = "0.5"
+mongodb = "1.1.1"
+rand = "0.7"
+dashmap = "4.0.0-rc6"
+serde = { version = "1.0", features = ["derive"] }
+futures = "0.3"
+async-trait = "0.1.40"
+dnd = { path = "../dnd" }
+
+#[dependencies.lavalink-rs]
+#git = "https://gitlab.com/nitsuga5124/lavalink-rs/"
+#branch = "master"
+
+[dependencies.serenity]
+git = "https://github.com/serenity-rs/serenity"
+branch = "current"
+default-features = false
+features = [
+    "builder",
+    "client",
+    "cache",
+    "framework",
+    "gateway",
+    "http",
+    "model",
+    "standard_framework",
+    "utils",
+    "rustls_backend",
+]
+version = "0.9.0-rc.1"
+
+[target.'cfg(linux)'.dependencies.openssl]
+version = "0.10"
+features = ["vendored"]
+
+[[bin]]
+path = "src/bin/beep.rs"
+name = "beep"

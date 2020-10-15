@@ -1,4 +1,4 @@
-use crate::util::{
+use crate::bot::util::{
     database_store::enums::{DatabaseCollections, GuildConfigData, GuildConfigKey, StoreResult},
     get_bot_id,
     managers::{Database, DatabaseStore},
@@ -44,7 +44,7 @@ impl EventHandler for Handler {
             let database_store = data.get::<DatabaseStore>().unwrap();
 
             if let StoreResult::Guild(data) = database_store
-                .get(DatabaseCollections::GuildConfig {
+                .fetch(DatabaseCollections::GuildConfig {
                     id: guild_id.0,
                     key: GuildConfigKey::DefaultRole,
                 })
